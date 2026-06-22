@@ -104,3 +104,27 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+# Large archive files from asset packs
+*.zip
+*.zip.meta
+*.rar
+*.rar.meta
+*.7z
+*.7z.meta
+
+# Optional: ignore compressed downloads/installers
+*.tar
+*.tar.gz
+*.gz
+
+# Optional: ignore video recordings if you have any
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# Optional: ignore large raw source art files unless you need them
+*.psd
+*.psd.meta
+*.blend
+*.blend.meta

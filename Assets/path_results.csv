@@ -1,0 +1,6 @@
+PlaythroughID,RecordType,Order,Name,FromNode,ToNode,Weight,TravelTime,DecisionTime,FinalTotalWeight,FinalTravelTime,FinalDecisionTime
+1,Path,1,1001,P10_A,P10_B,2,12.200,,11,26.420,8.640
+1,Path,2,1002,P10_C,P10_D,1,5.660,,11,26.420,8.640
+1,Path,3,1003,P10_E,P10_F,8,8.560,,11,26.420,8.640
+1,Decision,1,Blue_1,,,,,5.780,11,26.420,8.640
+1,Decision,2,Blue_5,,,,,2.860,11,26.420,8.640

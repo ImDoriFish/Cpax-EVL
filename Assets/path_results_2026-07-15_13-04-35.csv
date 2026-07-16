@@ -1,0 +1,4 @@
+PlaythroughID,RecordType,CompletionStatus,Order,Name,FromNode,FromNodeEnterTimestamp,ToNode,ToNodeEnterTimestamp,Weight,TravelTime,DecisionTime,DecisionEnterTimestamp,DecisionExitTimestamp,ToDecisionNodeAndEnd,ExitEnterTimestamp,FinalTotalWeight,FinalTravelTime,FinalDecisionTime
+1,Path,Incomplete,1,1001,P10_A,2026-07-15 13:04:44.415,P10_B,2026-07-15 13:04:52.176,2.000,7.760,,,,Blue_1,,,,
+1,Decision,Incomplete,1,Blue_1,,,,,,,2.420,2026-07-15 13:04:52.315,2026-07-15 13:04:54.735,,,,,
+1,Summary,Incomplete,,,,,,,,,,,,,,2.000,7.760,2.420

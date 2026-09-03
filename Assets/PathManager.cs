@@ -1,3 +1,6 @@
+
+
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -74,7 +77,13 @@ public class PathManager : MonoBehaviour
     // Creates a new CSV filename for this session and registers every valid path.
     private void Start()
     {
+        // Only create a local CSV path in the Editor
+        // or a normal desktop build.
+    #if !UNITY_WEBGL || UNITY_EDITOR
         CreateCsvFilePath();
+    #endif
+
+        // The maze paths are required everywhere.
         RegisterAllPaths();
     }
 
@@ -310,7 +319,58 @@ public class PathManager : MonoBehaviour
     // If the player did not reach Red, save the completed data as Incomplete.
     private void OnApplicationQuit()
     {
+        // Save any unfinished playthrough before trying to open the CSV.
         SaveIncompletePlaythrough();
+
+        // Only open the CSV in an actual Windows or macOS desktop build.
+        // Do not run this inside the Unity Editor or WebGL.
+#if (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX) && !UNITY_EDITOR
+        OpenCsvFile();
+#endif
+    }
+
+    // Opens the saved CSV using the computer's default spreadsheet application.
+    // This runs only after the Windows or macOS desktop build closes normally.
+    private void OpenCsvFile()
+    {
+        if (string.IsNullOrEmpty(csvFilePath) || !File.Exists(csvFilePath))
+        {
+            Debug.LogWarning(
+                "CSV file could not be opened because it does not exist: " +
+                csvFilePath
+            );
+
+            return;
+        }
+
+        try
+        {
+#if UNITY_STANDALONE_WIN
+            System.Diagnostics.Process.Start(
+                new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = csvFilePath,
+                    UseShellExecute = true
+                }
+            );
+
+#elif UNITY_STANDALONE_OSX
+            System.Diagnostics.Process.Start(
+                new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "/usr/bin/open",
+                    Arguments = "\"" + csvFilePath + "\"",
+                    UseShellExecute = false
+                }
+            );
+#endif
+        }
+        catch (Exception exception)
+        {
+            Debug.LogError(
+                "Could not open CSV file: " + exception.Message
+            );
+        }
     }
 
     // Saves the paths and decisions that were completed before the player quit.
@@ -383,8 +443,32 @@ public class PathManager : MonoBehaviour
             completionStatus = "Completed"
         };
 
-        allPlaythroughs.Add(playthrough);
-        SavePlaythroughToCSV(playthrough);
+        allPlaythroughs.Add(playthrough);   
+
+        #if UNITY_WEBGL && !UNITY_EDITOR
+
+                // Actual WebGL browser build.
+                if (PlaythroughUploader.Instance != null)
+                {
+                    PlaythroughUploader.Instance.PrepareAndUpload(
+                        playthrough
+                    );
+                }
+                else
+                {
+                    Debug.LogError(
+                        "PlaythroughUploader was not found in the scene."
+                    );
+                }
+
+        #else
+
+                // Unity Editor or desktop build.
+                SavePlaythroughToCSV(playthrough);
+
+        #endif
+
+        
 
         Debug.Log(
             "Playthrough " + playthroughNumber +
@@ -438,9 +522,14 @@ public class PathManager : MonoBehaviour
         string sessionTimestamp =
             DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
 
-        csvFilePath = Path.Combine(
+        /*csvFilePath = Path.Combine(
             Application.dataPath,
             "path_results_" + sessionTimestamp + ".csv"
+        );*/
+
+        csvFilePath = Path.Combine(
+        Application.persistentDataPath,
+        "path_results_" + sessionTimestamp + ".csv"
         );
 
         Debug.Log(
@@ -732,32 +821,95 @@ public class PathManager : MonoBehaviour
     private void RegisterAllPaths()
     {
         // Route group 1
-        AddPath("P10_A", "P10_B", "1001", 2f);
-        AddPath("P30_A", "P20_B", "2001", 6f);
-        AddPath("P40_A", "P30_B", "3001", 2f);
-        AddPath("P50_A", "P40_B", "4001", 6f);
-        AddPath("P20_A", "P50_B", "5001", 6f);
-        AddPath("P50_A", "P60_B", "6001", 5f);
+        //AddPath("P10_A", "P10_B", "1001", 2f);
+        AddPath("S0", "L1_0", "1001", 2f);
+
+
+        //AddPath("P30_A", "P20_B", "2001", 6f);
+        AddPath("S1", "L1_0", "2001", 6f);
+
+
+        //AddPath("P40_A", "P30_B", "3001", 2f);
+        AddPath("S1", "L1_1", "3001", 2f);
+
+
+        //AddPath("P50_A", "P40_B", "4001", 6f);
+        AddPath("S2", "L1_2", "4001", 6f);
+
+
+        //AddPath("P20_A", "P50_B", "5001", 6f);
+        AddPath("S0", "L1_3", "5001", 6f);
+
+
+        //AddPath("P60_A", "P60_B", "6001", 5f);
+        AddPath("S2", "L1_3", "6001", 5f);
 
         // Route group 2
-        AddPath("P10_C", "P10_D", "1002", 1f);
-        AddPath("P41_C", "P20_D", "2002", 3f);
-        AddPath("P31_C", "P31_D", "3002", 3f);
-        AddPath("P32_C", "P32_D", "4002", 5f);
-        AddPath("P50_C", "P41_D", "5002", 6f);
-        AddPath("P42_C", "P42_D", "6002", 5f);
-        AddPath("P20_C", "P50_D", "7002", 6f);
-        AddPath("P60_C", "P60_D", "8002", 3f);
+        //AddPath("P10_C", "P10_D", "1002", 1f);
+        AddPath("L1_0", "L2_0", "1002", 1f);
+
+
+        //AddPath("P41_C", "P20_D", "2002", 3f);
+        AddPath("L1_2", "L2_0", "2002", 3f);
+
+        
+        //AddPath("P31_C", "P31_D", "3002", 3f);
+        AddPath("L1_1", "L2_1", "3002", 3f);
+
+
+        
+        //AddPath("P32_C", "P32_D", "4002", 5f);
+        AddPath("L1_1", "L2_2", "4002", 5f);
+
+
+
+        //AddPath("P50_C", "P41_D", "5002", 6f);
+        AddPath("L1_3", "L2_2", "5002", 6f);
+
+        
+        //AddPath("P42_C", "P42_D", "6002", 5f);
+        AddPath("L1_2", "L2_2", "6002", 5f);
+
+
+        //AddPath("P20_C", "P50_D", "7002", 6f);
+        AddPath("L1_0", "L2_3", "7002", 6f);
+
+
+        //AddPath("P60_C", "P60_D", "8002", 3f);
+        AddPath("L1_3", "L2_3", "8002", 3f);
 
         // Route group 3
-        AddPath("P10_E", "P10_F", "1003", 8f);
-        AddPath("P50_E", "P20_F", "2003", 4f);
-        AddPath("P31_E", "P31_F", "3003", 3f);
-        AddPath("P41_E", "P32_F", "4003", 7f);
-        AddPath("P42_E", "P41_F", "5003", 7f);
-        AddPath("P20_E", "P42_F", "6003", 7f);
-        AddPath("P32_E", "P50_F", "7003", 3f);
-        AddPath("P60_E", "P60_F", "8003", 9f);
+
+        //AddPath("P10_E", "P10_F", "1003", 8f);
+        AddPath("L2_0", "E0", "1003", 8f);
+
+
+        //AddPath("P50_E", "P20_F", "2003", 4f);
+        AddPath("L2_3", "E0", "2003", 4f);
+
+        
+        //AddPath("P31_E", "P31_F", "3003", 3f);
+        AddPath("L2_1", "E0", "3003", 3f);
+
+
+        //AddPath("P41_E", "P32_F", "4003", 7f);
+        AddPath("L2_2", "E0", "4003", 7f);
+
+
+        //AddPath("P42_E", "P41_F", "5003", 7f);
+        AddPath("L2_2", "E1", "5003", 7f);
+
+
+        //AddPath("P20_E", "P42_F", "6003", 7f);
+        AddPath("L2_0", "E1", "6003", 7f);
+
+
+        //AddPath("P32_E", "P50_F", "7003", 3f);
+        AddPath("L2_1", "E1", "7003", 3f);
+
+
+        //AddPath("P60_E", "P60_F", "8003", 9f);
+        AddPath("L2_3", "E1", "8003", 9f);
     }
 
     // Creates one PathInfo object and stores it in pathMap.
@@ -800,6 +952,7 @@ public class PathManager : MonoBehaviour
 // =============================================================
 
 // Permanent definition of one valid maze path.
+[System.Serializable]
 public class PathInfo
 {
     public string fromNode;
@@ -809,6 +962,7 @@ public class PathInfo
 }
 
 // Data collected when the player actually travels through one path.
+[System.Serializable]
 public class UsedPath
 {
     public PathInfo pathInfo;
@@ -828,6 +982,7 @@ public class UsedPath
 }
 
 // All data for one completed playthrough.
+[System.Serializable]
 public class PlaythroughData
 {
     public int playthroughID;
@@ -844,6 +999,7 @@ public class PlaythroughData
 }
 
 // Data collected for one Blue decision node.
+[System.Serializable]
 public class DecisionData
 {
     public string decisionNodeID;
